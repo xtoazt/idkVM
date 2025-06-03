@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const response = await fetch("https://engine.hyperbeam.com/v0/vm", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer sk_live_TLIU4_RYGMmRjeNWn1pi8rJZIk40TC8HxP6DQIvaXvA", // Replace this with your real token
+        "Authorization": "Bearer YOUR_HYPERBEAM_TOKEN",  // Replace this!
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
