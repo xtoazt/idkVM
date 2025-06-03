@@ -1,65 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hyperbeam UI</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Hyperbeam Launcher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Nanum Gothic Coding', monospace;
+      background-color: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: hotpink;
+    }
+
+    input, button {
+      font-family: inherit;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 8px;
+      margin: 0.5rem;
+    }
+
+    input {
+      width: 300px;
+    }
+
+    button {
+      background-color: hotpink;
+      color: #000;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    #status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: lightgray;
+    }
+
+    iframe {
+      margin-top: 2rem;
+      border: 2px solid hotpink;
+      border-radius: 12px;
+      width: 90%;
+      height: 600px;
+    }
+  </style>
 </head>
 <body>
-  <main class="container">
-    <h1>🚀 Launch Hyperbeam</h1>
-    <p>A minimal interface to start a cloud browser session.</p>
-    
-    <form id="launchForm">
-      <input type="url" placeholder="Enter start URL" name="start_url" required />
-      <button type="submit">Start Session</button>
-    </form>
-    
-    <div id="result" class="hidden">
-      <p>Embed URL:</p>
-      <a id="embedLink" href="#" target="_blank"></a>
-    </div>
+  <h1>🚀 Hyperbeam Cloud Browser</h1>
 
-    <div id="error" class="error hidden"></div>
-  </main>
+  <input id="url" type="text" placeholder="Enter a URL (or leave blank for Google)" />
+  <br>
+  <button onclick="startSession()">Start Session</button>
+
+  <div id="status">Waiting to start...</div>
+
+  <iframe id="browserFrame" style="display:none;"></iframe>
 
   <script>
-    document.getElementById('launchForm').onsubmit = async (e) => {
-      e.preventDefault();
+    async function startSession() {
+      const input = document.getElementById("url").value;
+      const status = document.getElementById("status");
+      const frame = document.getElementById("browserFrame");
 
-      const errorBox = document.getElementById("error");
-      const resultBox = document.getElementById("result");
-      const link = document.getElementById("embedLink");
-
-      errorBox.classList.add("hidden");
-      resultBox.classList.add("hidden");
-      link.textContent = "";
-
-      const start_url = e.target.start_url.value.trim();
+      status.textContent = "⏳ Starting session...";
+      frame.style.display = "none";
 
       try {
-        const response = await fetch("/api/createSession", {
+        const res = await fetch("/api/createSession", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ start_url })
+          body: JSON.stringify({ start_url: input || "https://google.com" })
         });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        if (!response.ok) {
-          throw new Error(data.error || "Unknown error");
+        if (data.error) {
+          status.textContent = "❌ Error: " + data.error;
+          console.error(data);
+        } else {
+          status.textContent = "✅ Session started!";
+          frame.src = data.embed_url;
+          frame.style.display = "block";
         }
-
-        link.href = data.embed_url;
-        link.textContent = data.embed_url;
-        resultBox.classList.remove("hidden");
-
       } catch (err) {
-        errorBox.textContent = `❌ Error: ${err.message}`;
-        errorBox.classList.remove("hidden");
+        status.textContent = "⚠️ Failed to contact server.";
+        console.error(err);
       }
-    };
+    }
   </script>
 </body>
 </html>
