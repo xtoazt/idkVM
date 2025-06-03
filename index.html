@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hyperbeam UI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>🚀 Launch Hyperbeam</h1>
+    <p>A minimal interface to start a cloud browser session.</p>
+    <form id="launchForm">
+      <input type="url" placeholder="Enter start URL" name="start_url" required />
+      <button type="submit">Start Session</button>
+    </form>
+    <div id="result" class="hidden">
+      <p>Embed URL:</p>
+      <a id="embedLink" href="#" target="_blank"></a>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('launchForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const start_url = e.target.start_url.value;
+
+      const response = await fetch("https://engine.hyperbeam.com/v0/vm", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer YOUR_HYPERBEAM_TOKEN",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          start_url: start_url,
+          region: "NA",
+          adblock: true,
+          webgl: true
+        })
+      });
+
+      const data = await response.json();
+      const link = document.getElementById("embedLink");
+      link.href = data.embed_url;
+      link.textContent = data.embed_url;
+
+      document.getElementById("result").classList.remove("hidden");
+    };
+  </script>
+</body>
+</html>
